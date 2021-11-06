@@ -1,11 +1,11 @@
 import React, {useEffect, useState} from "react";
 import './App.css';
 import Recipe from "./Recipe.js";
-import env from "react-dotenv";
+import env from "react-dotenv"
 
 const App = () => {
 
-  const APP_ID = env.APP_ID;
+  const APP_ID =env.APP_ID;
   const APP_KEY = env.APP_KEY;
 
 
