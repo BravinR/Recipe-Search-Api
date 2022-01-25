@@ -5,4 +5,4 @@ The project uses **REACT JS, Hooks(state/effect), Asynchronous API(asyn/await,JS
 
 Custom CSS is used to style the website and to make it easy to manage CSS, **CSS modules** are used
 
-The website is deployed to Netlify [Check it Out](https://festive-engelbart-b5faf2.netlify.app/)
+The website is deployed to Netlify [Check it Out](https://recipepro.netlify.app)
