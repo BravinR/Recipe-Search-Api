@@ -12,7 +12,7 @@ const Recipe = ({title,calories, image, ingredients}) => {
                     </div>
                 ))}
             </ol>
-            <p>Calories: {calories}</p>
+            <p>Calories: {calories.toFixed()}</p>
             <img className= {style.image} src={image} alt="" />
 
         </div>
