@@ -1,19 +1,61 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
-function App() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [query, setQuery] = useState('chicken');
-  const [selectedRecipe, setSelectedRecipe] = useState(null);
+// Type definitions
+interface Nutrient {
+  label: string;
+  quantity: number;
+  unit: string;
+}
 
-  const fetchRecipes = async ({ queryKey }) => {
+interface Recipe {
+  label: string;
+  image: string;
+  source: string;
+  url: string;
+  yield?: number;
+  calories: number;
+  totalTime?: number;
+  mealType?: string[];
+  dietLabels?: string[];
+  healthLabels?: string[];
+  ingredientLines?: string[];
+  totalNutrients?: {
+    ENERC_KCAL?: Nutrient;
+    PROCNT?: Nutrient;
+    FAT?: Nutrient;
+    CHOCDF?: Nutrient;
+    FIBTG?: Nutrient;
+    NA?: Nutrient;
+    [key: string]: Nutrient | undefined;
+  };
+}
+
+interface RecipeHit {
+  recipe: Recipe;
+}
+
+interface EdamamResponse {
+  hits: RecipeHit[];
+}
+
+interface FetchRecipesParams {
+  queryKey: [string, string];
+}
+
+function App() {
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [query, setQuery] = useState<string>('chicken');
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+
+  const fetchRecipes = async ({ queryKey }: FetchRecipesParams): Promise<RecipeHit[]> => {
     const currentQuery = queryKey[1];
     const response = await fetch(
       `https://www.edamam.com/api/recipes/v2?type=public&q=${currentQuery}`);
     if (!response.ok) {
       throw new Error('Network response was not ok');
     }
-    const data = await response.json();
+    const data: EdamamResponse = await response.json();
     return data.hits;
   };
 
@@ -22,14 +64,20 @@ function App() {
     queryFn: fetchRecipes,
   });
 
-  const handleSearchChange = (e) => {
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setSearchTerm(e.target.value);
   };
 
-  const handleSearchSubmit = (e) => {
+  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     setQuery(searchTerm);
     setSelectedRecipe(null); // Close modal when searching
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (e.key === 'Enter') {
+      handleSearchSubmit(e as any);
+    }
   };
 
   if (isLoading) {
@@ -73,26 +121,22 @@ function App() {
             
             {/* Search Form */}
             <div className="max-w-2xl mx-auto">
-              <div className="flex flex-col sm:flex-row gap-4 bg-white/20 backdrop-blur-sm rounded-2xl p-4">
+              <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-4 bg-white/20 backdrop-blur-sm rounded-2xl p-4">
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={handleSearchChange}
                   placeholder="Search for recipes... (e.g., pasta, chicken, vegetables)"
                   className="flex-1 px-6 py-4 rounded-xl border-0 bg-white/90 backdrop-blur-sm text-gray-800 placeholder-gray-500 text-lg focus:outline-none focus:ring-4 focus:ring-yellow-300/50 transition-all duration-300"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSearchSubmit(e);
-                    }
-                  }}
+                  onKeyPress={handleKeyPress}
                 />
                 <button 
-                  onClick={handleSearchSubmit}
+                  type="submit"
                   className="px-8 py-4 bg-yellow-400 hover:bg-yellow-300 text-gray-800 font-bold rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-yellow-300/50 shadow-lg"
                 >
                   🔍 Search
                 </button>
-              </div>
+              </form>
             </div>
           </div>
         </div>
@@ -331,7 +375,7 @@ function App() {
                         { key: 'FIBTG', label: 'Fiber', unit: 'g', color: 'text-purple-600' },
                         { key: 'NA', label: 'Sodium', unit: 'mg', color: 'text-orange-600' }
                       ].map(nutrient => {
-                        const value = selectedRecipe.totalNutrients[nutrient.key];
+                        const value = selectedRecipe.totalNutrients?.[nutrient.key];
                         if (!value) return null;
                         return (
                           <div key={nutrient.key} className="text-center">
